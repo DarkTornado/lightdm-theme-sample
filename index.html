@@ -12,10 +12,12 @@
         width: 100%;
         height: 100%;
         font-size: 32px;
+        color: white;
+        background-color: black;
     }
 
     div.parent {
-        padding: 32px;
+        padding: 24px;
     }
 
     span {
@@ -43,19 +45,28 @@
         </div>
         <hr>
         <div class="menu">
-            <span onclick="">Login</span>
+            <span onclick="startLogin();">Login</span>
             <span onclick="lightdm.restart();">Reboot</span>
             <span onclick="lightdm.shutdown();">Shutdown</span>
+            <span onclick="lalala();">MakeCrash</span> <!-- We can exit from current theme to default theme when an error occurs. -->
+        </div>
+        <hr>
+        <div id="console_output">
+            
         </div>
     </div>
 
     <script>
-        window.addEventListener("load", (e) => {
-            initUserList();
-            initSessionList();
-        });
+        window.addEventListener("load", (e) => setTimeout(() => {
+            try {
+                initUserList();
+                initSessionList();
+            } catch (e) {
+                show_error(e);
+            }
+        }), 100);
 
-        var selectedUser, selectSession;
+        var selectedSession;
 
         function initUserList() {
             var src = '<span class="title">User List</span>';
@@ -72,6 +83,66 @@
             }
             document.getElementById("session_list").innerHTML = src;
         }
+
+        function selectUser(n) {
+            /* lightdm.users[n];
+              .display_name - display name of user, string
+              .username - username of user, string
+              .image - profile image of user, string
+              .home_directory - home directory image of user, string
+              .logged_in - if or not the user is currently logged in, boolean
+              .session - session's key used when the user most recently logged in, string
+              ... etc
+            */
+            lightdm.start_authentication(lightdm.users[n].username);
+           show_prompt(lightdm.users[n].username + ' is selected.');
+        }
+
+        function selectSession(n) {
+            /* lightdm.sessions[n];
+              .name - Name of session such as Plasma, Gnome, Cinnamon, xfce...
+              .key - this field will be used when login.
+            */
+            try {
+                selectedSession = lightdm.sessions[n];
+                show_prompt(lightdm.sessions[n].name + ' is selected.');
+            } catch (e) {
+                show_error(e);
+            }
+        }
+
+
+        /* Login Process
+          1. lightdm.start_authentication(username);
+          2. wait
+          3. lightdm.respond(password);
+          4. function authentication_complete() {} will be called
+          5. check lightdm.is_authenticated is true
+          6. lightdm.login(lightdm.authentication_user, session.key);
+        */
+
+        function startLogin() {
+            var password = document.getElementById("password_input").value;
+            lightdm.respond(password);
+        }
+        
+
+        function authentication_complete() {
+            if (lightdm.is_authenticated) {
+                lightdm.login(lightdm.authentication_user, selectedSession.key);
+            } else {
+                show_prompt('Failed to Login');
+            }
+        }
+
+        function show_prompt(msg) {
+            document.getElementById("console_output").innerHTML += "[Log] " + msg + "<br>";
+        }
+
+        function show_error(msg) {
+            document.getElementById("console_output").innerHTML += "[Error] " + msg + "<br>";
+        }
+
     </script>
 
 </body>
