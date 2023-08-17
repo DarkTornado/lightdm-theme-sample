@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>lightdm sample</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<style>
+    body {
+        margin: 0px;
+        width: 100%;
+        height: 100%;
+        font-size: 32px;
+    }
+
+    div.parent {
+        padding: 32px;
+    }
+
+    span {
+        padding: 8px;
+    }
+
+    span.title {
+        display: block;
+        font-weight: bold;
+    }
+</style>
+
+<body>
+    <div class="parent">
+        <div id="user_list">
+            <!-- User list will be applied here by initUserList(); method -->
+        </div>
+        <hr>
+        <div id="session_list">
+            <!-- Session list will be applied here by initUserList(); method -->
+        </div>
+        <hr>
+        <div class="password">
+            <input type="password" id="password_input" placeholder="input password">
+        </div>
+        <hr>
+        <div class="menu">
+            <span onclick="">Login</span>
+            <span onclick="lightdm.restart();">Reboot</span>
+            <span onclick="lightdm.shutdown();">Shutdown</span>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener("load", (e) => {
+            initUserList();
+            initSessionList();
+        });
+
+        var selectedUser, selectSession;
+
+        function initUserList() {
+            var src = '<span class="title">User List</span>';
+            for (var n = 0; n < lightdm.users.length; n++) {
+                src += "<span onclick='selectUser(" + n + ");'>" + lightdm.users[n].display_name + "</span>"
+            }
+            document.getElementById("user_list").innerHTML = src;
+        }
+
+        function initSessionList() {
+            var src = '<span class="title">Session List</span>';
+            for (var n = 0; n < lightdm.sessions.length; n++) {
+                src += "<span onclick='selectSession(" + n + ");'>" + lightdm.sessions[n].name + "</span>"
+            }
+            document.getElementById("session_list").innerHTML = src;
+        }
+    </script>
+
+</body>
+
+</html>
